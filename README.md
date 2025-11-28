@@ -118,7 +118,30 @@ Let's get Miku singing in your server! 🎤
    DISCORD_TOKEN=your_discord_bot_token_here
    ```
 
-5. Customize `configs/config.yaml` if needed:
+5. **(Optional but Recommended)** Add API keys to avoid rate limiting: 🔑
+
+   For production use or heavy usage, add service API keys to `.env`:
+
+   ```bash
+   # YouTube Data API v3 (recommended!)
+   # Get from: https://console.cloud.google.com/
+   YOUTUBE_API_KEY=your_youtube_api_key
+
+   # SoundCloud (optional)
+   # Get from: https://soundcloud.com/settings/applications
+   SOUNDCLOUD_CLIENT_ID=your_client_id
+   SOUNDCLOUD_AUTH_TOKEN=your_auth_token
+   ```
+
+   **Why add API keys?** 🤔
+   - ✅ Avoid rate limiting on YouTube and other services
+   - ✅ Better quality downloads
+   - ✅ Faster extraction and playback
+   - ✅ More reliable for high-traffic servers
+
+   **Note:** The bot works without API keys for personal/small server use! They're optional but recommended for production.
+
+6. Customize `configs/config.yaml` if needed:
    ```yaml
    bot:
      prefix: "!"
@@ -138,7 +161,7 @@ Let's get Miku singing in your server! 🎤
      timeout: 300
    ```
 
-6. Build and run:
+7. Build and run:
    ```bash
    go build -o miku_bot ./cmd/bot
    ./miku_bot

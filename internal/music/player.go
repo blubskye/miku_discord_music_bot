@@ -26,6 +26,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"sync"
 
@@ -74,12 +75,24 @@ type VideoInfo struct {
 }
 
 func ExtractInfo(url string) (*VideoInfo, error) {
-	cmd := exec.Command("yt-dlp",
+	args := []string{
 		"--dump-json",
 		"--no-playlist",
 		"--format", "bestaudio",
-		url,
-	)
+	}
+
+	// Add API keys if available (helps avoid rate limiting)
+	if youtubeKey := os.Getenv("YOUTUBE_API_KEY"); youtubeKey != "" {
+		args = append(args, "--username", "oauth2", "--password", "")
+	}
+
+	if soundcloudAuth := os.Getenv("SOUNDCLOUD_AUTH_TOKEN"); soundcloudAuth != "" {
+		args = append(args, "--add-header", "Authorization:OAuth "+soundcloudAuth)
+	}
+
+	args = append(args, url)
+
+	cmd := exec.Command("yt-dlp", args...)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -238,12 +251,24 @@ func (p *Player) playTrack(track *Track) error {
 	options.Application = "audio"
 	options.Volume = p.volume
 
-	cmd := exec.Command("yt-dlp",
+	args := []string{
 		"--format", "bestaudio",
 		"--output", "-",
 		"--no-playlist",
-		track.URL,
-	)
+	}
+
+	// Add API keys if available (helps avoid rate limiting)
+	if youtubeKey := os.Getenv("YOUTUBE_API_KEY"); youtubeKey != "" {
+		args = append(args, "--username", "oauth2", "--password", "")
+	}
+
+	if soundcloudAuth := os.Getenv("SOUNDCLOUD_AUTH_TOKEN"); soundcloudAuth != "" {
+		args = append(args, "--add-header", "Authorization:OAuth "+soundcloudAuth)
+	}
+
+	args = append(args, track.URL)
+
+	cmd := exec.Command("yt-dlp", args...)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

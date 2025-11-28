@@ -40,3 +40,7 @@ sources:
   twitch: true
   local: true
   http: true
+
+# Note: API keys and OAuth tokens should be configured in .env file
+# See .env.example for available API key options
+# API keys help avoid rate limiting and provide better quality/faster downloads
