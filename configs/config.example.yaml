@@ -1,0 +1,42 @@
+# Miku Bot Configuration Example
+# Copy this file to config.yaml and customize for your setup
+
+bot:
+  # Command prefix for bot commands
+  prefix: "!"
+
+  # Bot activity/status message (shown as "Playing ...")
+  activity: "Music | !help"
+
+  # Bot status: online, idle, dnd, invisible
+  status: "online"
+
+database:
+  # Path to SQLite database file
+  path: "miku_bot.db"
+
+roles:
+  # Default role names for permission levels
+  # Users can customize these in Discord with !setrole command
+  dj: "DJ"
+  mod: "Moderator"
+
+music:
+  # Maximum number of songs allowed in queue
+  max_queue_size: 100
+
+  # Default volume (0-100)
+  default_volume: 50
+
+  # Timeout in seconds before bot leaves inactive voice channel
+  timeout: 300
+
+sources:
+  # Enable/disable music sources
+  youtube: true
+  soundcloud: true
+  bandcamp: true
+  vimeo: true
+  twitch: true
+  local: true
+  http: true
