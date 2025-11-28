@@ -1,43 +1,49 @@
-# Miku Bot - Discord Music Bot
+# 🎵 Miku Bot - Discord Music Bot 💙
 
-A feature-rich Discord music bot written in Go with role-based permissions and SQLite persistence.
+> *"The world is mine!"* - Hatsune Miku ✨
 
-## Features
+A feature-rich Discord music bot written in Go with role-based permissions and SQLite persistence. Bringing the power of music to your Discord server! 🎶
 
-### Multi-Source Support
-- YouTube
-- SoundCloud
-- Bandcamp
-- Vimeo
-- Twitch streams
-- Local files
-- HTTP URLs
+## ✨ Features
 
-### Supported Audio Formats
-- MP3
-- FLAC
-- WAV
-- Matroska/WebM (AAC, Opus, Vorbis codecs)
-- MP4/M4A (AAC codec)
-- OGG streams (Opus, Vorbis, FLAC codecs)
-- AAC streams
-- Stream playlists (M3U, PLS)
+### 🎼 Multi-Source Support
+Stream music from anywhere! 🌐
+- 📺 YouTube
+- 🎧 SoundCloud
+- 🎸 Bandcamp
+- 📹 Vimeo
+- 🎮 Twitch streams
+- 💾 Local files
+- 🔗 HTTP URLs
 
-### Role-Based Permissions
-- **User**: Can add music to the queue
-- **DJ**: Can add music, skip tracks, remove tracks, move tracks to top, control playback (pause/resume), adjust volume
-- **Moderator**: All DJ permissions + can stop playback and clear the entire queue
-- **Admin**: All permissions + can configure bot settings and roles
+### 🎵 Supported Audio Formats
+Crystal-clear audio in multiple formats! 💎
+- 🎵 MP3
+- 🎼 FLAC
+- 🎹 WAV
+- 📦 Matroska/WebM (AAC, Opus, Vorbis codecs)
+- 📱 MP4/M4A (AAC codec)
+- 🎶 OGG streams (Opus, Vorbis, FLAC codecs)
+- 🎙️ AAC streams
+- 📋 Stream playlists (M3U, PLS)
 
-### Database Persistence
-- SQLite database for persistent storage
-- Guild-specific settings
-- Queue persistence across restarts
-- Playback history tracking
+### 👥 Role-Based Permissions
+Everyone has a part to play! 🎭
+- 👤 **User**: Can add music to the queue
+- 🎧 **DJ**: Can add music, skip tracks, remove tracks, move tracks to top, control playback (pause/resume), adjust volume
+- 🛡️ **Moderator**: All DJ permissions + can stop playback and clear the entire queue
+- 👑 **Admin**: All permissions + can configure bot settings and roles
 
-## Prerequisites
+### 💾 Database Persistence
+Your music, your way, always saved! 💖
+- 🗄️ SQLite database for persistent storage
+- ⚙️ Guild-specific settings
+- 🔄 Queue persistence across restarts
+- 📊 Playback history tracking
 
-Before running Miku Bot, you need to install:
+## 📋 Prerequisites
+
+Before running Miku Bot, you need to install these essentials! 🔧
 
 1. **Go** (1.21 or higher)
    ```bash
@@ -76,7 +82,9 @@ Before running Miku Bot, you need to install:
    # Install MinGW-w64 or TDM-GCC
    ```
 
-## Installation
+## 💿 Installation
+
+Let's get Miku singing in your server! 🎤
 
 1. Clone the repository:
    ```bash
@@ -141,9 +149,9 @@ Before running Miku Bot, you need to install:
    go run ./cmd/bot
    ```
 
-## Command Line Flags
+## 🚀 Command Line Flags
 
-The bot supports the following command-line flags:
+Power up Miku with these special flags! ⚡
 
 ```bash
 ./miku_bot --help        # Show help message
@@ -163,7 +171,9 @@ Examples:
 ./miku_bot
 ```
 
-## Bot Invite
+## 🎫 Bot Invite
+
+Invite Miku to your server! 💌
 
 To invite the bot to your server, create an invite link with the following permissions:
 
@@ -183,9 +193,11 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=31
 
 Replace `YOUR_CLIENT_ID` with your bot's client ID from the Discord Developer Portal.
 
-## Commands
+## 🎮 Commands
 
-### Music Commands
+Let the concert begin! 🎪
+
+### 🎵 Music Commands
 
 | Command | Description | Permission |
 |---------|-------------|------------|
@@ -201,7 +213,7 @@ Replace `YOUR_CLIENT_ID` with your bot's client ID from the Discord Developer Po
 | `!movetop <position>` / `!mt <position>` | Move song to top of queue | DJ+ |
 | `!volume <0-100>` / `!vol <0-100>` | Set playback volume | DJ+ |
 
-### Bot Commands
+### 🤖 Bot Commands
 
 | Command | Description | Permission |
 |---------|-------------|------------|
@@ -211,9 +223,11 @@ Replace `YOUR_CLIENT_ID` with your bot's client ID from the Discord Developer Po
 | `!source` / `!info` | Show source code and creator info | User+ |
 | `!help` | Show help message | User+ |
 
-## Usage Examples
+## 🎬 Usage Examples
 
-### Playing Music
+Time to make some noise! 🔊
+
+### 🎶 Playing Music
 
 ```
 !play https://www.youtube.com/watch?v=dQw4w9WgXcQ
@@ -221,7 +235,7 @@ Replace `YOUR_CLIENT_ID` with your bot's client ID from the Discord Developer Po
 !p https://soundcloud.com/artist/track
 ```
 
-### Managing Queue
+### 📝 Managing Queue
 
 ```
 !queue                  # Show current queue
@@ -230,7 +244,7 @@ Replace `YOUR_CLIENT_ID` with your bot's client ID from the Discord Developer Po
 !clear                  # Clear entire queue (Mod only)
 ```
 
-### Playback Control
+### ⏯️ Playback Control
 
 ```
 !skip                   # Skip current song
@@ -240,14 +254,16 @@ Replace `YOUR_CLIENT_ID` with your bot's client ID from the Discord Developer Po
 !stop                   # Stop playback (Mod only)
 ```
 
-### Server Setup
+### ⚙️ Server Setup
 
 ```
 !setrole dj @DJ         # Set DJ role
 !setrole mod @Moderator # Set Moderator role
 ```
 
-## Project Structure
+## 📁 Project Structure
+
+Organized like a perfect setlist! 🎼
 
 ```
 miku_bot_go/
@@ -277,9 +293,11 @@ miku_bot_go/
 └── README.md
 ```
 
-## Architecture
+## 🏗️ Architecture
 
-### Database Schema
+Built for performance and reliability! 💪
+
+### 🗄️ Database Schema
 
 **guilds**
 - Stores guild-specific settings (prefix, role IDs, volume)
@@ -291,7 +309,9 @@ miku_bot_go/
 **playback_history**
 - Tracks all played songs for analytics
 
-### Music Playback Flow
+### 🎵 Music Playback Flow
+
+The magic behind the music! ✨
 
 1. User issues `!play` command with URL or search query
 2. Bot extracts video information using yt-dlp
@@ -302,31 +322,33 @@ miku_bot_go/
 7. Audio is sent to Discord voice channel
 8. On completion, next track in queue starts automatically
 
-### Permission System
+### 🔐 Permission System
 
 The bot uses a hierarchical permission system:
 - Each guild can set custom DJ and Moderator roles
 - Admins are determined by Discord server permissions
 - Commands check user level before execution
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Bot doesn't respond to commands
+Having trouble? Don't worry, we've got you covered! 💙
+
+### ❌ Bot doesn't respond to commands
 - Check that MESSAGE CONTENT INTENT is enabled
 - Verify the bot has permission to read messages in the channel
 - Ensure the correct command prefix is being used
 
-### Audio playback issues
+### 🔇 Audio playback issues
 - Verify FFmpeg is installed: `ffmpeg -version`
 - Verify yt-dlp is installed: `yt-dlp --version`
 - Check bot has permission to connect and speak in voice channel
 
-### Database errors
+### 💾 Database errors
 - Ensure GCC/build tools are installed for sqlite3
 - Check file permissions for database file
 - Verify database path in config.yaml
 
-### Build errors
+### 🛠️ Build errors
 ```bash
 # If you get CGO errors, ensure GCC is installed
 # On Windows, you may need to set:
@@ -338,9 +360,11 @@ go mod download
 go build -o miku_bot ./cmd/bot
 ```
 
-## Development
+## 💻 Development
 
-### Running in Development
+Join the development! 🚀
+
+### 🔨 Running in Development
 
 ```bash
 # Run with hot reload (using air or similar)
@@ -351,7 +375,7 @@ export LOG_LEVEL=debug
 go run ./cmd/bot
 ```
 
-### Building for Production
+### 📦 Building for Production
 
 ```bash
 # Build optimized binary
@@ -363,7 +387,9 @@ GOOS=windows GOARCH=amd64 go build -o miku_bot-windows.exe ./cmd/bot
 GOOS=darwin GOARCH=arm64 go build -o miku_bot-macos ./cmd/bot
 ```
 
-## Dependencies
+## 📚 Dependencies
+
+Standing on the shoulders of giants! 🌟
 
 - [discordgo](https://github.com/bwmarrin/discordgo) - Discord API wrapper
 - [go-sqlite3](https://github.com/mattn/go-sqlite3) - SQLite3 driver
@@ -371,9 +397,11 @@ GOOS=darwin GOARCH=arm64 go build -o miku_bot-macos ./cmd/bot
 - [godotenv](https://github.com/joho/godotenv) - Environment variable loader
 - [yaml.v3](https://gopkg.in/yaml.v3) - YAML parser
 
-## License
+## 📜 License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+
+Free as in freedom! 💝
 
 **What this means:**
 - You are free to use, modify, and distribute this software
@@ -386,18 +414,38 @@ See the [LICENSE](LICENSE) file for the full license text.
 
 **Network Use:** The AGPL-3.0 license requires that if you run a modified version of this bot as a network service (like a public Discord bot), you must make the complete source code of your modified version available to users. The `!source` command is included to help satisfy this requirement.
 
-## Creator
+## 👨‍💻 Creator
 
-- **GitHub:** [blubskye](https://github.com/blubskye)
-- **Discord:** blubaustin
-- **Repository:** [miku_discord_music_bot](https://github.com/blubskye/miku_discord_music_bot)
+Made with 💙 by a Miku fan!
 
-## Credits
+- **GitHub:** [blubskye](https://github.com/blubskye) ⭐
+- **Discord:** blubaustin 💬
+- **Repository:** [miku_discord_music_bot](https://github.com/blubskye/miku_discord_music_bot) 🎵
 
-Built with Go and love for music.
+## 💖 Credits
+
+Built with Go and love for music! 🎶
+
+Special thanks to Hatsune Miku for the inspiration! ✨💙
+
+*"Music is a moral law. It gives soul to the universe, wings to the mind, flight to the imagination, and charm and gaiety to life and to everything."* 🎵
 
 Copyright (C) 2025 blubskye
 
-## Support
+## 🆘 Support
+
+Need help? We're here for you! 💪
 
 For issues and feature requests, please open an issue on the [GitHub repository](https://github.com/blubskye/miku_discord_music_bot/issues).
+
+---
+
+<div align="center">
+
+### ⭐ Star this repo if Miku brings music to your Discord! ⭐
+
+Made with 💙 and lots of ☕
+
+*Keep the music playing!* 🎵✨
+
+</div>
