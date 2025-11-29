@@ -48,6 +48,8 @@ Play your own music collection! 📁
 - 📋 Browse by folder structure
 - ⚡ Fast playback with FFmpeg direct encoding
 - 🎼 Supports: MP3, FLAC, WAV, OGG, M4A, OPUS, AAC, WMA
+- 🖼️ **Album art extraction** - Automatically extracts and displays album art from audio file metadata
+- 🎵 **Metadata support** - Reads track title, artist, and album information from files
 
 ## 📋 Prerequisites
 
@@ -235,6 +237,8 @@ Want to play your own music collection? Here's how! 🎵
 - 🔄 Restart the bot to refresh the library after adding new files
 - 🎯 Filename matching is case-insensitive and supports partial matches
 - ⚡ Local files play faster than streaming (no download needed!)
+- 🖼️ **Album art** is automatically extracted from MP3, FLAC, M4A, and other formats with embedded artwork
+- 🎵 Metadata (title, artist, album) is read from file tags and displayed in "now playing"
 
 ## 🚀 Command Line Flags
 
@@ -521,6 +525,7 @@ Standing on the shoulders of giants! 🌟
 - [dca](https://github.com/jonas747/dca) - Discord audio encoding
 - [godotenv](https://github.com/joho/godotenv) - Environment variable loader
 - [yaml.v3](https://gopkg.in/yaml.v3) - YAML parser
+- [tag](https://github.com/dhowden/tag) - Audio metadata and album art extraction
 
 ## 📜 License
 

@@ -22,25 +22,34 @@
 package music
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/dhowden/tag"
 )
 
 type LocalFile struct {
-	Name     string
-	Path     string
-	Folder   string
-	Duration int // Duration in seconds (can be extracted from metadata later)
+	Name        string
+	Path        string
+	Folder      string
+	Duration    int    // Duration in seconds (can be extracted from metadata later)
+	AlbumArt    string // Path to cached album art file
+	Title       string // Track title from metadata
+	Artist      string // Artist from metadata
+	Album       string // Album from metadata
 }
 
 type Library struct {
-	rootPath string
-	files    map[string][]*LocalFile // folder -> files
-	mu       sync.RWMutex
+	rootPath   string
+	files      map[string][]*LocalFile // folder -> files
+	artCache   string                  // Directory for cached album art
+	mu         sync.RWMutex
 }
 
 var supportedExtensions = map[string]bool{
@@ -64,9 +73,16 @@ func NewLibrary(rootPath string) (*Library, error) {
 		return nil, fmt.Errorf("music folder does not exist: %s", rootPath)
 	}
 
+	// Create cache directory for album art
+	cacheDir := filepath.Join(os.TempDir(), "miku_bot_albumart")
+	if err := os.MkdirAll(cacheDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create album art cache directory: %w", err)
+	}
+
 	lib := &Library{
 		rootPath: rootPath,
 		files:    make(map[string][]*LocalFile),
+		artCache: cacheDir,
 	}
 
 	// Scan the directory
@@ -75,6 +91,57 @@ func NewLibrary(rootPath string) (*Library, error) {
 	}
 
 	return lib, nil
+}
+
+func (l *Library) extractMetadata(filePath string) (title, artist, album string, artPath string) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	m, err := tag.ReadFrom(f)
+	if err != nil {
+		// If metadata reading fails, use filename as title
+		title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+		return
+	}
+
+	title = m.Title()
+	artist = m.Artist()
+	album = m.Album()
+
+	// If title is empty, use filename
+	if title == "" {
+		title = strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+	}
+
+	// Extract album art if available
+	picture := m.Picture()
+	if picture != nil && len(picture.Data) > 0 {
+		// Create a hash of the file path for unique cache filename
+		hash := md5.Sum([]byte(filePath))
+		hashStr := hex.EncodeToString(hash[:])
+
+		// Determine file extension from MIME type
+		ext := ".jpg"
+		if strings.Contains(picture.MIMEType, "png") {
+			ext = ".png"
+		}
+
+		artPath = filepath.Join(l.artCache, hashStr+ext)
+
+		// Save album art to cache if it doesn't exist
+		if _, err := os.Stat(artPath); os.IsNotExist(err) {
+			if err := os.WriteFile(artPath, picture.Data, 0644); err == nil {
+				// Successfully saved
+			} else {
+				artPath = "" // Clear on error
+			}
+		}
+	}
+
+	return
 }
 
 func (l *Library) Scan() error {
@@ -113,11 +180,18 @@ func (l *Library) Scan() error {
 			folder = "root"
 		}
 
+		// Extract metadata and album art
+		title, artist, album, artPath := l.extractMetadata(path)
+
 		// Create local file entry
 		file := &LocalFile{
-			Name:   d.Name(),
-			Path:   path,
-			Folder: folder,
+			Name:     d.Name(),
+			Path:     path,
+			Folder:   folder,
+			AlbumArt: artPath,
+			Title:    title,
+			Artist:   artist,
+			Album:    album,
 		}
 
 		// Add to files map

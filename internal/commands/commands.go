@@ -22,7 +22,10 @@
 package commands
 
 import (
+	"bytes"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"miku_bot/internal/database"
@@ -363,9 +366,6 @@ func (h *Handler) handleNowPlaying(s *discordgo.Session, m *discordgo.MessageCre
 		Title:       "Now Playing",
 		Description: fmt.Sprintf("**%s**", nowPlaying.Title),
 		Color:       0x9B59B6,
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: nowPlaying.Thumbnail,
-		},
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   "Requested by",
@@ -373,6 +373,48 @@ func (h *Handler) handleNowPlaying(s *discordgo.Session, m *discordgo.MessageCre
 				Inline: true,
 			},
 		},
+	}
+
+	// Handle album art for local files
+	if nowPlaying.IsLocal && strings.HasPrefix(nowPlaying.Thumbnail, "attachment://") {
+		// Extract the actual file path from the library
+		// We need to get the original file info to access the album art path
+		if h.library != nil {
+			// Find the file in the library to get the actual album art path
+			allFiles := h.library.GetAllFiles()
+			for _, file := range allFiles {
+				if file.Path == nowPlaying.URL {
+					if file.AlbumArt != "" {
+						// Read the album art file
+						artData, err := os.ReadFile(file.AlbumArt)
+						if err == nil {
+							// Send as message with embed and file attachment
+							fileName := filepath.Base(file.AlbumArt)
+							embed.Image = &discordgo.MessageEmbedImage{
+								URL: "attachment://" + fileName,
+							}
+
+							s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+								Embed: embed,
+								Files: []*discordgo.File{
+									{
+										Name:   fileName,
+										Reader: bytes.NewReader(artData),
+									},
+								},
+							})
+							return
+						}
+					}
+					break
+				}
+			}
+		}
+	} else if nowPlaying.Thumbnail != "" {
+		// For online sources, use thumbnail URL
+		embed.Thumbnail = &discordgo.MessageEmbedThumbnail{
+			URL: nowPlaying.Thumbnail,
+		}
 	}
 
 	s.ChannelMessageSendEmbed(m.ChannelID, embed)
@@ -774,11 +816,24 @@ func (h *Handler) handleLocalPlay(s *discordgo.Session, m *discordgo.MessageCrea
 		return
 	}
 
+	// Use metadata title if available, otherwise use filename
+	trackTitle := file.Title
+	if trackTitle == "" {
+		trackTitle = file.Name
+	}
+
+	// Use album art if available
+	thumbnail := file.AlbumArt
+	if thumbnail != "" {
+		// Convert local file path to file:// URL for Discord
+		thumbnail = "attachment://" + filepath.Base(thumbnail)
+	}
+
 	track := &music.Track{
-		Title:     file.Name,
+		Title:     trackTitle,
 		URL:       file.Path,
 		Duration:  file.Duration,
-		Thumbnail: "",
+		Thumbnail: thumbnail,
 		Requester: m.Author.ID,
 		IsLocal:   true,
 	}

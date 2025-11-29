@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0 // indirect
+	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/jonas747/dca v0.0.0-20210930103944-155f5e5f0cc7 // indirect
