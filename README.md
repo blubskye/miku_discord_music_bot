@@ -41,6 +41,14 @@ Your music, your way, always saved! 💖
 - 🔄 Queue persistence across restarts
 - 📊 Playback history tracking
 
+### 🎵 Local Music Library
+Play your own music collection! 📁
+- 📂 Automatic folder scanning and indexing
+- 🔍 Search files by name with fuzzy matching
+- 📋 Browse by folder structure
+- ⚡ Fast playback with FFmpeg direct encoding
+- 🎼 Supports: MP3, FLAC, WAV, OGG, M4A, OPUS, AAC, WMA
+
 ## 📋 Prerequisites
 
 Before running Miku Bot, you need to install these essentials! 🔧
@@ -159,6 +167,10 @@ Let's get Miku singing in your server! 🎤
      max_queue_size: 100
      default_volume: 50
      timeout: 300
+     music_folder: "/path/to/your/music"  # Set this to enable local file playback
+
+   sources:
+     local: true  # Enable local file support
    ```
 
 7. Build and run:
@@ -171,6 +183,58 @@ Let's get Miku singing in your server! 🎤
    ```bash
    go run ./cmd/bot
    ```
+
+## 💾 Setting Up Local Music Library
+
+Want to play your own music collection? Here's how! 🎵
+
+1. **Organize your music folder:**
+   ```
+   /path/to/your/music/
+   ├── Jazz/
+   │   ├── Miles Davis - So What.mp3
+   │   └── John Coltrane - Giant Steps.flac
+   ├── Rock/
+   │   ├── Led Zeppelin - Stairway to Heaven.mp3
+   │   └── Pink Floyd - Comfortably Numb.wav
+   ├── Classical/
+   │   └── Beethoven - Symphony No 9.flac
+   └── favorite_song.mp3  # Files in root appear in "root" folder
+   ```
+
+2. **Update your config:**
+
+   Edit `configs/config.yaml`:
+   ```yaml
+   music:
+     music_folder: "/path/to/your/music"  # Absolute path to your music directory
+
+   sources:
+     local: true  # Must be enabled
+   ```
+
+3. **Supported audio formats:**
+   - 🎵 MP3
+   - 🎼 FLAC (lossless)
+   - 🎹 WAV (uncompressed)
+   - 📦 OGG (Opus/Vorbis)
+   - 📱 M4A/AAC
+   - 🎶 OPUS
+   - 🎙️ WMA
+
+4. **Using local files:**
+   ```
+   !folders                  # See all your folders
+   !files Rock               # List files in Rock folder
+   !local Rock Stairway      # Play with partial name match
+   !search beethoven         # Find files across all folders
+   ```
+
+**Tips:**
+- 📂 The bot automatically scans subdirectories
+- 🔄 Restart the bot to refresh the library after adding new files
+- 🎯 Filename matching is case-insensitive and supports partial matches
+- ⚡ Local files play faster than streaming (no download needed!)
 
 ## 🚀 Command Line Flags
 
@@ -236,6 +300,15 @@ Let the concert begin! 🎪
 | `!movetop <position>` / `!mt <position>` | Move song to top of queue | DJ+ |
 | `!volume <0-100>` / `!vol <0-100>` | Set playback volume | DJ+ |
 
+### 💾 Local File Commands
+
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `!folders` | List all music folders in your library | User+ |
+| `!files <folder>` | List all files in a specific folder | User+ |
+| `!local <folder> <filename>` / `!l <folder> <filename>` | Play a local file by folder and name | User+ |
+| `!search <query>` | Search for local files by name | User+ |
+
 ### 🤖 Bot Commands
 
 | Command | Description | Permission |
@@ -277,6 +350,16 @@ Time to make some noise! 🔊
 !stop                   # Stop playback (Mod only)
 ```
 
+### 💾 Local File Playback
+
+```
+!folders                        # List all folders in your music library
+!files Jazz                     # Show all files in the "Jazz" folder
+!local Jazz song.mp3            # Play song.mp3 from Jazz folder
+!local Rock track               # Partial filename matching works!
+!search beethoven               # Find all files with "beethoven" in the name
+```
+
 ### ⚙️ Server Setup
 
 ```
@@ -302,7 +385,8 @@ miku_bot_go/
 │   ├── database/
 │   │   └── database.go          # SQLite database layer
 │   ├── music/
-│   │   └── player.go            # Music player with DCA encoding
+│   │   ├── player.go            # Music player with DCA encoding
+│   │   └── library.go           # Local music library manager
 │   ├── permissions/
 │   │   └── permissions.go       # Role-based permission system
 │   └── queue/
@@ -336,6 +420,7 @@ Built for performance and reliability! 💪
 
 The magic behind the music! ✨
 
+**Online Sources (YouTube, SoundCloud, etc.):**
 1. User issues `!play` command with URL or search query
 2. Bot extracts video information using yt-dlp
 3. Track is added to database and in-memory queue
@@ -344,6 +429,15 @@ The magic behind the music! ✨
 6. DCA encodes audio for Discord
 7. Audio is sent to Discord voice channel
 8. On completion, next track in queue starts automatically
+
+**Local Files:**
+1. User issues `!local <folder> <filename>` command
+2. Bot searches local library for matching file
+3. Track is added to queue with local file path
+4. FFmpeg directly encodes the local file (faster!)
+5. DCA encodes audio for Discord
+6. Audio is sent to Discord voice channel
+7. Next track plays automatically
 
 ### 🔐 Permission System
 
@@ -370,6 +464,14 @@ Having trouble? Don't worry, we've got you covered! 💙
 - Ensure GCC/build tools are installed for sqlite3
 - Check file permissions for database file
 - Verify database path in config.yaml
+
+### 📁 Local file playback issues
+- Verify `music_folder` path is absolute (not relative)
+- Ensure `sources.local` is set to `true` in config.yaml
+- Check that the music folder and files have read permissions
+- Supported formats: MP3, FLAC, WAV, OGG, M4A, OPUS, AAC, WMA
+- Restart the bot after adding new files to refresh the library
+- Use `!folders` to verify the library loaded correctly
 
 ### 🛠️ Build errors
 ```bash

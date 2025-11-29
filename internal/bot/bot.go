@@ -30,6 +30,7 @@ import (
 
 	"miku_bot/internal/commands"
 	"miku_bot/internal/database"
+	"miku_bot/internal/music"
 	"miku_bot/internal/queue"
 
 	"github.com/bwmarrin/discordgo"
@@ -69,7 +70,20 @@ func New(token string, configPath string) (*Bot, error) {
 	}
 
 	queueMgr := queue.NewManager(db)
-	commandHandler := commands.NewHandler(db, queueMgr, config.Bot.Prefix)
+
+	// Initialize local music library if configured
+	var library *music.Library
+	if config.Music.MusicFolder != "" && config.Sources.Local {
+		library, err = music.NewLibrary(config.Music.MusicFolder)
+		if err != nil {
+			log.Printf("Warning: Failed to initialize local music library: %v", err)
+			log.Println("Local file playback will be disabled")
+		} else {
+			log.Printf("Local music library initialized: %d files found", library.GetTotalFiles())
+		}
+	}
+
+	commandHandler := commands.NewHandler(db, queueMgr, config.Bot.Prefix, library)
 
 	bot := &Bot{
 		Session:  session,

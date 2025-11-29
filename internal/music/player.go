@@ -28,6 +28,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
@@ -40,6 +42,7 @@ type Track struct {
 	Duration  int
 	Thumbnail string
 	Requester string
+	IsLocal   bool
 }
 
 type Player struct {
@@ -75,6 +78,11 @@ type VideoInfo struct {
 }
 
 func ExtractInfo(url string) (*VideoInfo, error) {
+	// Check if it's a local file path
+	if isLocalFile(url) {
+		return extractLocalFileInfo(url)
+	}
+
 	args := []string{
 		"--dump-json",
 		"--no-playlist",
@@ -105,6 +113,34 @@ func ExtractInfo(url string) (*VideoInfo, error) {
 	}
 
 	return &info, nil
+}
+
+func isLocalFile(path string) bool {
+	// Check if it's an absolute path
+	if filepath.IsAbs(path) {
+		if _, err := os.Stat(path); err == nil {
+			return true
+		}
+	}
+	return false
+}
+
+func extractLocalFileInfo(path string) (*VideoInfo, error) {
+	// Check if file exists
+	if _, err := os.Stat(path); err != nil {
+		return nil, fmt.Errorf("file not found: %w", err)
+	}
+
+	// Get file name without extension for title
+	fileName := filepath.Base(path)
+	title := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+
+	return &VideoInfo{
+		Title:     title,
+		URL:       path,
+		Duration:  0, // Duration extraction can be added later
+		Thumbnail: "",
+	}, nil
 }
 
 func (p *Player) Connect(s *discordgo.Session, channelID string) error {
@@ -251,6 +287,47 @@ func (p *Player) playTrack(track *Track) error {
 	options.Application = "audio"
 	options.Volume = p.volume
 
+	var cmd *exec.Cmd
+	var stdout io.ReadCloser
+	var err error
+
+	// Handle local files differently
+	if track.IsLocal {
+		// Use ffmpeg directly for local files
+		encodeSession, err := dca.EncodeFile(track.URL, options)
+		if err != nil {
+			return fmt.Errorf("failed to encode local file: %w", err)
+		}
+		defer encodeSession.Cleanup()
+
+		p.mu.Lock()
+		p.encoding = encodeSession
+		done := make(chan error)
+		streamSession := dca.NewStream(encodeSession, p.voiceConn, done)
+		p.streaming = streamSession
+		p.mu.Unlock()
+
+		select {
+		case err := <-done:
+			if err != nil && err != io.EOF {
+				return fmt.Errorf("streaming error: %w", err)
+			}
+		case <-p.stopChan:
+			p.mu.Lock()
+			if p.streaming != nil {
+				p.streaming.SetPaused(true)
+			}
+			if p.encoding != nil {
+				p.encoding.Cleanup()
+			}
+			p.mu.Unlock()
+			return nil
+		}
+
+		return nil
+	}
+
+	// Handle online URLs with yt-dlp
 	args := []string{
 		"--format", "bestaudio",
 		"--output", "-",
@@ -268,9 +345,9 @@ func (p *Player) playTrack(track *Track) error {
 
 	args = append(args, track.URL)
 
-	cmd := exec.Command("yt-dlp", args...)
+	cmd = exec.Command("yt-dlp", args...)
 
-	stdout, err := cmd.StdoutPipe()
+	stdout, err = cmd.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}

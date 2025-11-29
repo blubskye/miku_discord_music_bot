@@ -38,14 +38,16 @@ type Handler struct {
 	queueMgr    *queue.Manager
 	permissions map[string]*permissions.Permission
 	prefix      string
+	library     *music.Library
 }
 
-func NewHandler(db *database.Database, queueMgr *queue.Manager, prefix string) *Handler {
+func NewHandler(db *database.Database, queueMgr *queue.Manager, prefix string, library *music.Library) *Handler {
 	return &Handler{
 		db:          db,
 		queueMgr:    queueMgr,
 		permissions: make(map[string]*permissions.Permission),
 		prefix:      prefix,
+		library:     library,
 	}
 }
 
@@ -101,6 +103,14 @@ func (h *Handler) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate
 		h.handleSource(s, m)
 	case "setrole":
 		h.handleSetRole(s, m, args)
+	case "folders":
+		h.handleFolders(s, m)
+	case "files":
+		h.handleFiles(s, m, args)
+	case "local", "l":
+		h.handleLocalPlay(s, m, args)
+	case "search":
+		h.handleSearch(s, m, args)
 	}
 }
 
@@ -534,6 +544,14 @@ func (h *Handler) handleHelp(s *discordgo.Session, m *discordgo.MessageCreate) {
 				Inline: false,
 			},
 			{
+				Name: "Local Files",
+				Value: "`!folders` - List all music folders\n" +
+					"`!files <folder>` - List files in a folder\n" +
+					"`!local <folder> <filename>` - Play local file\n" +
+					"`!search <query>` - Search for files by name",
+				Inline: false,
+			},
+			{
 				Name: "Bot Commands",
 				Value: "`!join` - Join voice channel\n" +
 					"`!leave` - Leave voice channel\n" +
@@ -643,4 +661,184 @@ func (h *Handler) handleSetRole(s *discordgo.Session, m *discordgo.MessageCreate
 	perm.UpdateRoles(djRoleID, modRoleID)
 
 	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Updated %s role to <@&%s>", roleType, roleID))
+}
+
+func (h *Handler) handleFolders(s *discordgo.Session, m *discordgo.MessageCreate) {
+	if h.library == nil {
+		s.ChannelMessageSend(m.ChannelID, "Local library is not configured!")
+		return
+	}
+
+	folders := h.library.GetFolders()
+
+	if len(folders) == 0 {
+		s.ChannelMessageSend(m.ChannelID, "No folders found in local library!")
+		return
+	}
+
+	embed := &discordgo.MessageEmbed{
+		Title: "Local Music Folders",
+		Color: 0x9B59B6,
+	}
+
+	foldersList := ""
+	for i, folder := range folders {
+		files := h.library.GetFiles(folder)
+		foldersList += fmt.Sprintf("%d. **%s** (%d files)\n", i+1, folder, len(files))
+	}
+
+	embed.Description = foldersList
+	embed.Footer = &discordgo.MessageEmbedFooter{
+		Text: fmt.Sprintf("Total: %d files", h.library.GetTotalFiles()),
+	}
+
+	s.ChannelMessageSendEmbed(m.ChannelID, embed)
+}
+
+func (h *Handler) handleFiles(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	if h.library == nil {
+		s.ChannelMessageSend(m.ChannelID, "Local library is not configured!")
+		return
+	}
+
+	if len(args) == 0 {
+		s.ChannelMessageSend(m.ChannelID, "Please specify a folder name! Use `!folders` to see available folders.")
+		return
+	}
+
+	folder := strings.Join(args, " ")
+	files := h.library.GetFiles(folder)
+
+	if len(files) == 0 {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("No files found in folder: %s", folder))
+		return
+	}
+
+	embed := &discordgo.MessageEmbed{
+		Title: fmt.Sprintf("Files in: %s", folder),
+		Color: 0x9B59B6,
+	}
+
+	filesList := ""
+	for i, file := range files {
+		if i >= 20 {
+			filesList += fmt.Sprintf("\n...and %d more files", len(files)-20)
+			break
+		}
+		filesList += fmt.Sprintf("%d. %s\n", i+1, file.Name)
+	}
+
+	embed.Description = filesList
+	embed.Footer = &discordgo.MessageEmbedFooter{
+		Text: fmt.Sprintf("Total: %d files", len(files)),
+	}
+
+	s.ChannelMessageSendEmbed(m.ChannelID, embed)
+}
+
+func (h *Handler) handleLocalPlay(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	if h.library == nil {
+		s.ChannelMessageSend(m.ChannelID, "Local library is not configured!")
+		return
+	}
+
+	if len(args) < 2 {
+		s.ChannelMessageSend(m.ChannelID, "Usage: `!local <folder> <filename>`")
+		return
+	}
+
+	perm := h.getPermission(m.GuildID)
+	userLevel, err := perm.GetUserLevel(s, m.GuildID, m.Author.ID)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error checking permissions!")
+		return
+	}
+
+	if !perm.CanAddMusic(userLevel) {
+		s.ChannelMessageSend(m.ChannelID, "You don't have permission to add music!")
+		return
+	}
+
+	voiceChannel, err := h.getUserVoiceChannel(s, m.GuildID, m.Author.ID)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "You must be in a voice channel!")
+		return
+	}
+
+	folder := args[0]
+	fileName := strings.Join(args[1:], " ")
+
+	file, err := h.library.GetFileByFolderAndName(folder, fileName)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Error: %v", err))
+		return
+	}
+
+	track := &music.Track{
+		Title:     file.Name,
+		URL:       file.Path,
+		Duration:  file.Duration,
+		Thumbnail: "",
+		Requester: m.Author.ID,
+		IsLocal:   true,
+	}
+
+	player := h.queueMgr.GetPlayer(m.GuildID)
+
+	if err := player.Connect(s, voiceChannel); err != nil {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Error connecting to voice channel: %v", err))
+		return
+	}
+
+	if err := h.queueMgr.AddTrack(m.GuildID, voiceChannel, m.Author.ID, track); err != nil {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Error adding track: %v", err))
+		return
+	}
+
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Added to queue: **%s** (from %s)", file.Name, folder))
+
+	if !player.IsPlaying() {
+		player.Play()
+	}
+}
+
+func (h *Handler) handleSearch(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	if h.library == nil {
+		s.ChannelMessageSend(m.ChannelID, "Local library is not configured!")
+		return
+	}
+
+	if len(args) == 0 {
+		s.ChannelMessageSend(m.ChannelID, "Please provide a search query!")
+		return
+	}
+
+	query := strings.Join(args, " ")
+	results := h.library.SearchByName(query)
+
+	if len(results) == 0 {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("No files found matching: %s", query))
+		return
+	}
+
+	embed := &discordgo.MessageEmbed{
+		Title: fmt.Sprintf("Search results for: %s", query),
+		Color: 0x9B59B6,
+	}
+
+	resultsList := ""
+	for i, file := range results {
+		if i >= 15 {
+			resultsList += fmt.Sprintf("\n...and %d more results", len(results)-15)
+			break
+		}
+		resultsList += fmt.Sprintf("%d. **%s** (in %s)\n", i+1, file.Name, file.Folder)
+	}
+
+	embed.Description = resultsList
+	embed.Footer = &discordgo.MessageEmbedFooter{
+		Text: fmt.Sprintf("Total: %d results", len(results)),
+	}
+
+	s.ChannelMessageSendEmbed(m.ChannelID, embed)
 }

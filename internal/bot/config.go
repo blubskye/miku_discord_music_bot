@@ -45,9 +45,10 @@ type Config struct {
 	} `yaml:"roles"`
 
 	Music struct {
-		MaxQueueSize int `yaml:"max_queue_size"`
-		DefaultVolume int `yaml:"default_volume"`
-		Timeout      int `yaml:"timeout"`
+		MaxQueueSize  int    `yaml:"max_queue_size"`
+		DefaultVolume int    `yaml:"default_volume"`
+		Timeout       int    `yaml:"timeout"`
+		MusicFolder   string `yaml:"music_folder"`
 	} `yaml:"music"`
 
 	Sources struct {

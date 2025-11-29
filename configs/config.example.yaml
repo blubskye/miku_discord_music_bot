@@ -31,6 +31,10 @@ music:
   # Timeout in seconds before bot leaves inactive voice channel
   timeout: 300
 
+  # Path to local music folder (leave empty to disable local files)
+  # Example: "/home/user/Music" or "./music"
+  music_folder: ""
+
 sources:
   # Enable/disable music sources
   youtube: true
