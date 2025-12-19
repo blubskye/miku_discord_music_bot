@@ -529,20 +529,48 @@ Standing on the shoulders of giants! 🌟
 
 ## 📜 License
 
-This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)** 🎵
 
-Free as in freedom! 💝
+### 💙 What This Means For You~
 
-**What this means:**
-- You are free to use, modify, and distribute this software
-- If you modify and deploy this bot (even as a network service), you must:
-  - Make your source code available
-  - License your modifications under AGPL-3.0
-  - Provide a way for users to access the source (the `!source` command does this)
+*"Let's share the music with everyone!"* 💝
+
+The AGPL-3.0 is a **copyleft license** that ensures this software remains free and open. Here's what you need to know:
+
+#### ✅ You CAN:
+- 🎵 **Use** this bot for any purpose (personal, commercial, whatever~)
+- 🔧 **Modify** the code to your heart's content
+- 📤 **Distribute** copies to others
+- 🌐 **Run** it as a network service (like a public Discord bot)
+
+#### 📋 You MUST:
+- 📖 **Keep it open source** - If you modify and distribute this code, your version must also be AGPL-3.0
+- 🔗 **Provide source access** - Users of your modified bot must be able to get the source code
+- 📝 **State changes** - Document what you've modified from the original
+- 💌 **Include license** - Keep the LICENSE file and copyright notices intact
+
+#### 🌐 The Network Clause (This is the important part!):
+*"Even across the network... the music connects us~"* 💙
+
+Unlike regular GPL, **AGPL has a network provision**. This means:
+- If you run a **modified version** of this bot as a public service (like hosting it for others to use on Discord)
+- You **MUST** make your complete source code available to users
+- The `!source` command in this bot helps satisfy this requirement!
+
+#### ❌ You CANNOT:
+- 🚫 Make it closed source
+- 🚫 Remove the license or copyright notices
+- 🚫 Use a different license for modified versions
+- 🚫 Hide your modifications if you run it as a public service
+
+#### 💡 In Simple Terms:
+> *"If you use my code to create something, you must share it with everyone too~ That's only fair, right?"* 🎶
+
+This ensures that improvements to the bot benefit the entire community, not just one person. Let's keep the music playing for everyone! 💙
 
 See the [LICENSE](LICENSE) file for the full license text.
 
-**Network Use:** The AGPL-3.0 license requires that if you run a modified version of this bot as a network service (like a public Discord bot), you must make the complete source code of your modified version available to users. The `!source` command is included to help satisfy this requirement.
+**Source Code:** https://github.com/blubskye/miku_discord_music_bot
 
 ## 👨‍💻 Creator
 
